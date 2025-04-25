@@ -1,6 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Loan, Lender, CreateBorrowerRequest } from './interfaces/IBorrower';
 import { BorrowerService } from './services/borrower.service';
 
@@ -9,10 +15,9 @@ import { BorrowerService } from './services/borrower.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './borrower.component.html',
-  styleUrl: './borrower.component.css'
+  styleUrl: './borrower.component.css',
 })
 export class BorrowerComponent implements OnInit {
-
   loans: Loan[] = [];
   filteredLoans: Loan[] = [];
   lenders: Lender[] = [];
@@ -22,12 +27,12 @@ export class BorrowerComponent implements OnInit {
   showCreateModal = false;
   showCancelModal = false;
   processing = false;
-  searchTerm = "";
-  statusFilter = "all";
+  searchTerm = '';
+  statusFilter = 'all';
 
   // Mensajes
-  successMessage = "";
-  errorMessage = "";
+  successMessage = '';
+  errorMessage = '';
 
   // Préstamo seleccionado para cancelar
   selectedLoan: Loan | null = null;
@@ -35,19 +40,26 @@ export class BorrowerComponent implements OnInit {
   // Formulario
   createForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private borrowerService: BorrowerService) {
+  constructor(
+    private fb: FormBuilder,
+    private borrowerService: BorrowerService
+  ) {
     // Inicializar formulario
     this.createForm = this.fb.group({
       lender_id: [null, [Validators.required]],
       amount: [null, [Validators.required, Validators.min(1)]],
       cuotas: [null, [Validators.required, Validators.min(1)]],
       date_initial: [this.formatDate(new Date()), [Validators.required]],
-      date_final: ["", [Validators.required]],
+      date_final: ['', [Validators.required]],
     });
 
     // Actualizar fecha final cuando cambian cuotas o fecha inicial
-    this.createForm.get("cuotas")?.valueChanges.subscribe(() => this.updateFinalDate());
-    this.createForm.get("date_initial")?.valueChanges.subscribe(() => this.updateFinalDate());
+    this.createForm
+      .get('cuotas')
+      ?.valueChanges.subscribe(() => this.updateFinalDate());
+    this.createForm
+      .get('date_initial')
+      ?.valueChanges.subscribe(() => this.updateFinalDate());
   }
 
   ngOnInit(): void {
@@ -64,8 +76,9 @@ export class BorrowerComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error("Error al cargar préstamos:", err);
-        this.errorMessage = "Error al cargar los préstamos. Intente nuevamente.";
+        console.error('Error al cargar préstamos:', err);
+        this.errorMessage =
+          'Error al cargar los préstamos. Intente nuevamente.';
         this.loading = false;
       },
     });
@@ -79,8 +92,9 @@ export class BorrowerComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error("Error al cargar prestamistas:", err);
-        this.errorMessage = "Error al cargar los prestamistas. Intente nuevamente.";
+        console.error('Error al cargar prestamistas:', err);
+        this.errorMessage =
+          'Error al cargar los prestamistas. Intente nuevamente.';
         this.loading = false;
       },
     });
@@ -98,12 +112,12 @@ export class BorrowerComponent implements OnInit {
           loan.lender.name.toLowerCase().includes(term) ||
           loan.amount.includes(term) ||
           loan.interest_rate.includes(term) ||
-          loan.status.toLowerCase().includes(term),
+          loan.status.toLowerCase().includes(term)
       );
     }
 
     // Filtrar por estado
-    if (this.statusFilter !== "all") {
+    if (this.statusFilter !== 'all') {
       filtered = filtered.filter((loan) => loan.status === this.statusFilter);
     }
 
@@ -117,7 +131,7 @@ export class BorrowerComponent implements OnInit {
       amount: null,
       cuotas: null,
       date_initial: this.formatDate(new Date()),
-      date_final: "",
+      date_final: '',
     });
     this.showCreateModal = true;
   }
@@ -144,8 +158,8 @@ export class BorrowerComponent implements OnInit {
     }
 
     this.processing = true;
-    this.successMessage = "";
-    this.errorMessage = "";
+    this.successMessage = '';
+    this.errorMessage = '';
 
     const loanData: CreateBorrowerRequest = {
       lender_id: this.createForm.value.lender_id,
@@ -160,17 +174,19 @@ export class BorrowerComponent implements OnInit {
         this.loans.unshift(newLoan); // Añade el nuevo préstamo a la lista
         this.filterLoans(); // Actualiza la lista filtrada
         this.processing = false;
-        this.successMessage = "Solicitud de préstamo creada exitosamente";
+        this.successMessage = 'Solicitud de préstamo creada exitosamente';
+        this.loadLoans();
+        this.loadLenders();
         this.closeCreateModal();
 
         // Ocultar mensaje después de 3 segundos
         setTimeout(() => {
-          this.successMessage = "";
+          this.successMessage = '';
         }, 3000);
       },
       error: (err) => {
-        console.error("Error al crear el préstamo:", err);
-        this.errorMessage = "Error al crear el préstamo. Intente nuevamente.";
+        console.error('Error al crear el préstamo:', err);
+        this.errorMessage = 'Error al crear el préstamo. Intente nuevamente.';
         this.processing = false;
       },
     });
@@ -180,46 +196,53 @@ export class BorrowerComponent implements OnInit {
     if (!this.selectedLoan) return;
 
     this.processing = true;
-    this.successMessage = "";
-    this.errorMessage = "";
+    this.successMessage = '';
+    this.errorMessage = '';
 
-    this.borrowerService.cancelBorrower(this.selectedLoan.id.toString()).subscribe({
-      next: () => {
-        const index = this.loans.findIndex((l) => l.id === this.selectedLoan?.id);
-        if (index !== -1) {
-          this.loans[index].status = "cancelled";
-          this.loans[index].updatedAt = new Date().toISOString();
-          this.filterLoans();
-        }
+    this.borrowerService
+      .cancelBorrower(this.selectedLoan.id.toString())
+      .subscribe({
+        next: () => {
+          const index = this.loans.findIndex(
+            (l) => l.id === this.selectedLoan?.id
+          );
+          if (index !== -1) {
+            this.loans[index].status = 'cancelled';
+            this.loans[index].updatedAt = new Date().toISOString();
+            this.filterLoans();
+          }
 
-        this.processing = false;
-        this.successMessage = "Préstamo cancelado exitosamente";
-        this.closeCancelModal();
+          this.processing = false;
+          this.successMessage = 'Préstamo cancelado exitosamente';
+          this.loadLoans();
+          this.loadLenders();
+          this.closeCancelModal();
 
-        // Ocultar mensaje después de 3 segundos
-        setTimeout(() => {
-          this.successMessage = "";
-        }, 3000);
-      },
-      error: (err) => {
-        console.error("Error al cancelar el préstamo:", err);
-        this.errorMessage = "Error al cancelar el préstamo. Intente nuevamente.";
-        this.processing = false;
-      },
-    });
+          // Ocultar mensaje después de 3 segundos
+          setTimeout(() => {
+            this.successMessage = '';
+          }, 3000);
+        },
+        error: (err) => {
+          console.error('Error al cancelar el préstamo:', err);
+          this.errorMessage =
+            'Error al cancelar el préstamo. Intente nuevamente.';
+          this.processing = false;
+        },
+      });
   }
 
   // Helpers
   formatDate(date: Date): string {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
 
   updateFinalDate(): void {
-    const cuotas = this.createForm.get("cuotas")?.value;
-    const dateInitial = this.createForm.get("date_initial")?.value;
+    const cuotas = this.createForm.get('cuotas')?.value;
+    const dateInitial = this.createForm.get('date_initial')?.value;
 
     if (cuotas && dateInitial) {
       const initialDate = new Date(dateInitial);
@@ -233,43 +256,50 @@ export class BorrowerComponent implements OnInit {
   }
 
   formatCurrency(amount: string): string {
-    return new Intl.NumberFormat("es-ES", { style: "currency", currency: "USD" }).format(Number.parseFloat(amount));
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(Number.parseFloat(amount));
   }
 
   formatDateString(dateString: string): string {
     const date = new Date(dateString);
-    return date.toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" });
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   }
 
   getStatusClass(status: string): string {
     switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "approved":
-        return "bg-green-100 text-green-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      case "cancelled":
-        return "bg-gray-100 text-gray-800";
-      case "completed":
-        return "bg-blue-100 text-blue-800";
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'approved':
+        return 'bg-green-100 text-green-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
+      case 'cancelled':
+        return 'bg-gray-100 text-gray-800';
+      case 'completed':
+        return 'bg-blue-100 text-blue-800';
       default:
-        return "bg-gray-100 text-gray-800";
+        return 'bg-gray-100 text-gray-800';
     }
   }
 
   getStatusText(status: string): string {
     switch (status) {
-      case "pending":
-        return "Pendiente";
-      case "approved":
-        return "Aprobado";
-      case "rejected":
-        return "Rechazado";
-      case "cancelled":
-        return "Cancelado";
-      case "completed":
-        return "Completado";
+      case 'pending':
+        return 'Pendiente';
+      case 'approved':
+        return 'Aprobado';
+      case 'rejected':
+        return 'Rechazado';
+      case 'cancelled':
+        return 'Cancelado';
+      case 'completed':
+        return 'Completado';
       default:
         return status;
     }
@@ -277,16 +307,21 @@ export class BorrowerComponent implements OnInit {
 
   isFieldInvalid(form: FormGroup, field: string): boolean {
     const formControl = form.get(field);
-    return !!formControl && formControl.invalid && (formControl.dirty || formControl.touched);
+    return (
+      !!formControl &&
+      formControl.invalid &&
+      (formControl.dirty || formControl.touched)
+    );
   }
 
   getFieldError(form: FormGroup, field: string): string {
     const formControl = form.get(field);
-    if (!formControl) return "";
+    if (!formControl) return '';
 
-    if (formControl.errors?.["required"]) return "Este campo es requerido";
-    if (formControl.errors?.["min"]) return `El valor debe ser mayor a ${formControl.errors?.["min"].min}`;
+    if (formControl.errors?.['required']) return 'Este campo es requerido';
+    if (formControl.errors?.['min'])
+      return `El valor debe ser mayor a ${formControl.errors?.['min'].min}`;
 
-    return "Campo inválido";
+    return 'Campo inválido';
   }
 }

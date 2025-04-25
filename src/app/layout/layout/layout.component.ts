@@ -8,6 +8,8 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { LayoutService } from '../layout/servicies/layout.service'; 
+import { ILayout } from '../layout/interfaces/ILayout'; 
 
 interface ChatMessage {
   text: string;
@@ -39,7 +41,7 @@ export class LayoutComponent implements OnInit, AfterViewChecked {
     avatar: '/placeholder.svg?height=40&width=40',
   };
 
-  // Menú de navegación
+  // Menú de navegación original
   navigationItems = [
     {
       title: 'Dashboard',
@@ -73,11 +75,34 @@ export class LayoutComponent implements OnInit, AfterViewChecked {
     },
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private layoutService: LayoutService) {} // Inyectar el servicio
 
   ngOnInit() {
     this.checkScreenSize();
     window.addEventListener('resize', this.checkScreenSize.bind(this));
+  
+    // Filtrar los paths permitidos al inicializar el componente
+    this.layoutService.getUserInfo().subscribe((data: ILayout) => {
+      const allowedPaths: string[] = data.paths; // Obtener los paths permitidos
+      this.navigationItems = this.navigationItems.filter((item) =>
+        allowedPaths.includes(item.route)
+      );
+  
+      // Redirigir al primer path permitido
+      const defaultRoute = this.navigationItems.find(item => allowedPaths.includes(item.route))?.route;
+      if (defaultRoute) {
+        this.router.navigate([defaultRoute]);
+      }
+    });
+  }
+
+  filterNavigationItems() {
+    this.layoutService.getUserInfo().subscribe((data: ILayout) => {
+      const allowedPaths: string[] = data.paths; // Obtener los paths permitidos
+      this.navigationItems = this.navigationItems.filter((item) =>
+        allowedPaths.includes(item.route)
+      );
+    });
   }
 
   ngAfterViewChecked() {

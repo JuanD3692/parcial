@@ -1,6 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Role, User } from './interfaces/IUsers';
 import { UsersService } from './services/users.service';
 
@@ -9,7 +15,7 @@ import { UsersService } from './services/users.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './users.component.html',
-  styleUrl: './users.component.css'
+  styleUrl: './users.component.css',
 })
 export class UsersComponent {
   users: User[] = [];
@@ -20,9 +26,9 @@ export class UsersComponent {
   showEditModal = false;
   showDeleteModal = false;
   processing = false;
-  searchTerm = "";
-  successMessage = "";
-  errorMessage = "";
+  searchTerm = '';
+  successMessage = '';
+  errorMessage = '';
   selectedUser: User | null = null;
   createForm: FormGroup;
   editForm: FormGroup;
@@ -38,12 +44,12 @@ export class UsersComponent {
 
   private initForm(): FormGroup {
     return this.fb.group({
-      name: ["", [Validators.required]],
-      document: ["", [Validators.required]],
-      phone: ["", [Validators.required]],
-      username: ["", [Validators.required]],
-      email: ["", [Validators.required, Validators.email]],
-      password: ["", [Validators.minLength(6)]],
+      name: ['', [Validators.required]],
+      document: ['', [Validators.required]],
+      phone: ['', [Validators.required]],
+      username: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.minLength(6)]],
       role: [null, [Validators.required]],
     });
   }
@@ -51,7 +57,7 @@ export class UsersComponent {
   private showMessage(type: 'success' | 'error', message: string): void {
     if (type === 'success') {
       this.successMessage = message;
-      setTimeout(() => (this.successMessage = ""), 3000);
+      setTimeout(() => (this.successMessage = ''), 3000);
     } else {
       this.errorMessage = message;
     }
@@ -72,11 +78,14 @@ export class UsersComponent {
       document: form.value.document,
       phone: form.value.phone,
       username: form.value.username || form.value.email,
-      email: form.value.username || form.value.email,
+      email: form.value.email,
       password: form.value.password,
       status: isEdit ? this.selectedUser?.status || true : true,
       role: form.value.role,
-      Rol: { id: form.value.role, rol: isEdit ? this.selectedUser?.Rol.rol || '' : '' },
+      Rol: {
+        id: form.value.role,
+        rol: isEdit ? this.selectedUser?.Rol.rol || '' : '',
+      },
     };
   }
 
@@ -90,8 +99,11 @@ export class UsersComponent {
         this.loading = false;
       },
       error: (err) => {
-        console.error("Error al cargar usuarios:", err);
-        this.showMessage('error', "Error al cargar los usuarios. Intente nuevamente.");
+        console.error('Error al cargar usuarios:', err);
+        this.showMessage(
+          'error',
+          'Error al cargar los usuarios. Intente nuevamente.'
+        );
         this.loading = false;
       },
     });
@@ -105,11 +117,11 @@ export class UsersComponent {
     }
 
     this.filteredUsers = this.users.filter((user) =>
-      ['name', 'username', 'document', 'phone', 'Rol.rol']
-        .some((key) => {
-          const value = key === 'Rol.rol' ? user.Rol?.rol : user[key as keyof User];
-          return value?.toString().toLowerCase().includes(term);
-        })
+      ['name', 'username', 'document', 'phone', 'Rol.rol'].some((key) => {
+        const value =
+          key === 'Rol.rol' ? user.Rol?.rol : user[key as keyof User];
+        return value?.toString().toLowerCase().includes(term);
+      })
     );
   }
 
@@ -129,7 +141,7 @@ export class UsersComponent {
       document: user.document,
       phone: user.phone,
       username: user.username,
-      email: user.email || "",
+      email: user.email || '',
       role: user.Rol.id,
     });
     this.showEditModal = true;
@@ -163,15 +175,17 @@ export class UsersComponent {
           this.filteredUsers = [...this.users];
         }
         this.processing = false;
-        this.showMessage('success', "Usuario creado exitosamente");
+        this.showMessage('success', 'Usuario creado exitosamente');
         this.closeCreateModal();
         this.loadUsers();
       },
       error: (err) => {
-        console.error("Error al crear usuario:", err);
-        this.showMessage('error', "Error al crear el usuario. Intente nuevamente.");
+        console.error('Error al crear usuario:', err);
+        this.showMessage(
+          'error',
+          'Error al crear el usuario. Intente nuevamente.'
+        );
         this.processing = false;
-        
       },
     });
   }
@@ -182,23 +196,28 @@ export class UsersComponent {
     this.processing = true;
     const userData = this.getUserData(this.editForm, true);
 
-    this.usersService.updateUsers(this.selectedUser.id.toString(), userData).subscribe({
-      next: (updatedUser: User) => {
-        this.users = this.users.map((u) =>
-          u.id === this.selectedUser?.id ? { ...updatedUser } : u
-        );
-        this.filteredUsers = [...this.users];
-        this.processing = false;
-        this.showMessage('success', "Usuario actualizado exitosamente");
-        this.closeEditModal();
-        this.loadUsers();
-      },
-      error: (err) => {
-        console.error("Error al actualizar usuario:", err);
-        this.showMessage('error', "Error al actualizar el usuario. Intente nuevamente.");
-        this.processing = false;
-      },
-    });
+    this.usersService
+      .updateUsers(this.selectedUser.id.toString(), userData)
+      .subscribe({
+        next: (updatedUser: User) => {
+          this.users = this.users.map((u) =>
+            u.id === this.selectedUser?.id ? { ...updatedUser } : u
+          );
+          this.filteredUsers = [...this.users];
+          this.processing = false;
+          this.showMessage('success', 'Usuario actualizado exitosamente');
+          this.closeEditModal();
+          this.loadUsers();
+        },
+        error: (err) => {
+          console.error('Error al actualizar usuario:', err);
+          this.showMessage(
+            'error',
+            'Error al actualizar el usuario. Intente nuevamente.'
+          );
+          this.processing = false;
+        },
+      });
   }
 
   deleteUser(): void {
@@ -211,12 +230,15 @@ export class UsersComponent {
         this.users = this.users.filter((u) => u.id !== this.selectedUser?.id);
         this.filteredUsers = [...this.users];
         this.processing = false;
-        this.showMessage('success', "Usuario eliminado exitosamente");
+        this.showMessage('success', 'Usuario eliminado exitosamente');
         this.closeDeleteModal();
       },
       error: (err) => {
-        console.error("Error al eliminar usuario:", err);
-        this.showMessage('error', "Error al eliminar el usuario. Intente nuevamente.");
+        console.error('Error al eliminar usuario:', err);
+        this.showMessage(
+          'error',
+          'Error al eliminar el usuario. Intente nuevamente.'
+        );
         this.processing = false;
       },
     });
@@ -225,34 +247,43 @@ export class UsersComponent {
   toggleUserStatus(user: User): void {
     const newStatus = !user.status;
 
-    this.usersService.updateUsers(user.id.toString(), { ...user, status: newStatus }).subscribe({
-      next: () => {
-        const index = this.users.findIndex((u) => u.id === user.id);
-        if (index !== -1) {
-          this.users[index].status = newStatus;
-          this.filteredUsers = [...this.users];
-        }
-      },
-      error: (err) => {
-        console.error("Error al cambiar el estado del usuario:", err);
-        this.showMessage('error', "Error al cambiar el estado del usuario. Intente nuevamente.");
-      },
-    });
+    this.usersService
+      .updateUsers(user.id.toString(), { ...user, status: newStatus })
+      .subscribe({
+        next: () => {
+          const index = this.users.findIndex((u) => u.id === user.id);
+          if (index !== -1) {
+            this.users[index].status = newStatus;
+            this.filteredUsers = [...this.users];
+          }
+        },
+        error: (err) => {
+          console.error('Error al cambiar el estado del usuario:', err);
+          this.showMessage(
+            'error',
+            'Error al cambiar el estado del usuario. Intente nuevamente.'
+          );
+        },
+      });
   }
 
   isFieldInvalid(form: FormGroup, field: string): boolean {
     const formControl = form.get(field);
-    return !!formControl && formControl.invalid && (formControl.dirty || formControl.touched);
+    return (
+      !!formControl &&
+      formControl.invalid &&
+      (formControl.dirty || formControl.touched)
+    );
   }
 
   getFieldError(form: FormGroup, field: string): string {
     const formControl = form.get(field);
-    if (!formControl) return "";
+    if (!formControl) return '';
 
-    if (formControl.errors?.["required"]) return "Este campo es requerido";
-    if (formControl.errors?.["minlength"])
-      return `Mínimo ${formControl.errors?.["minlength"].requiredLength} caracteres`;
+    if (formControl.errors?.['required']) return 'Este campo es requerido';
+    if (formControl.errors?.['minlength'])
+      return `Mínimo ${formControl.errors?.['minlength'].requiredLength} caracteres`;
 
-    return "Campo inválido";
+    return 'Campo inválido';
   }
 }
