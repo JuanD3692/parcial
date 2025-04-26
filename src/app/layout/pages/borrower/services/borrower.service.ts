@@ -4,25 +4,24 @@ import { Loan, Lender, CreateBorrowerRequest } from '../interfaces/IBorrower';
 import { Observable } from 'rxjs';
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root',
 })
-
 export class BorrowerService {
+  constructor(private http: HttpService) {}
 
-    constructor(private http: HttpService) { }
+  getBorrower() {
+    return this.http.get<{ loans: Loan[]; lenders: Lender[] }>('borrower');
+  }
 
+  createBorrower(data: CreateBorrowerRequest): Observable<Loan> {
+    return this.http.post<Loan>('borrower', data);
+  }
 
-    getBorrower() {
-        return this.http.get<{ loans: Loan[]; lenders: Lender[] }>('borrower');
-    }
+  cancelBorrower(id: string) {
+    return this.http.delete(`borrower/${id}`);
+  }
 
-    createBorrower(data: CreateBorrowerRequest): Observable<Loan> {
-        return this.http.post<Loan>('borrower', data);
-    }
-
-    cancelBorrower(id: string) {
-        return this.http.delete(`borrower/${id}`);
-    }
-
+  pagarCuota(loanId: string) {
+    return this.http.put(`lender/pagar_cuota/${loanId}`);
+  }
 }
-

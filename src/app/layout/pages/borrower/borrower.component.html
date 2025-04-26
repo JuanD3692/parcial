@@ -242,11 +242,21 @@
               <button
                 *ngIf="loan.status === 'pending'"
                 (click)="openCancelModal(loan)"
-                class="text-red-600 hover:text-red-900"
+                class="text-red-600 hover:text-red-900 mr-2"
               >
                 Cancelar
               </button>
-              <span *ngIf="loan.status !== 'pending'" class="text-gray-400">
+              <button
+                *ngIf="loan.status === 'approved'"
+                (click)="openPayModal(loan)"
+                class="text-emerald-600 hover:text-emerald-900"
+              >
+                Pagar cuota
+              </button>
+              <span
+                *ngIf="loan.status !== 'pending' && loan.status !== 'approved'"
+                class="text-gray-400"
+              >
                 No disponible
               </span>
             </td>
@@ -613,6 +623,179 @@
             class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
           >
             Volver
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Pago PSE -->
+  <div
+    *ngIf="showPayModal"
+    class="fixed inset-0 z-50 overflow-y-auto"
+    aria-labelledby="modal-title"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div
+      class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
+    >
+      <!-- Overlay -->
+      <div
+        class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+      ></div>
+
+      <!-- Modal -->
+      <div
+        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+      >
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <!-- Contenido del modal -->
+          <div *ngIf="!showPaymentSuccess">
+            <!-- Header PSE -->
+            <div class="text-center border-b pb-4">
+              <img
+                src="https://th.bing.com/th/id/R.37f990653c4489a84cb120e865864b69?rik=4iMTs%2bNiQrOkVw&riu=http%3a%2f%2fatencionalcliente.movistar.co%2fpse%2fimg%2flogo-pse.png&ehk=ps2XnrHLShgSvqIKdS0aTNdW1IWdp6xbrsS3T9iNll8%3d&risl=&pid=ImgRaw&r=0"
+                alt="PSE Logo"
+                class="h-12 mx-auto mb-2"
+              />
+              <h3 class="text-lg font-medium text-gray-900">
+                Pagos Seguros en Línea
+              </h3>
+            </div>
+
+            <!-- Resumen de la transacción -->
+            <div class="mt-4 bg-gray-50 p-4 rounded-md">
+              <h4 class="text-sm font-medium text-gray-700 mb-3">
+                Resumen de la Transacción
+              </h4>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Comercio:</span>
+                  <span class="text-sm font-medium">Préstamos App</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Referencia:</span>
+                  <span class="text-sm font-medium"
+                    >#{{ selectedLoanForPayment?.id || "" }}</span
+                  >
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Descripción:</span>
+                  <span class="text-sm font-medium">Pago cuota préstamo</span>
+                </div>
+                <div class="flex justify-between border-t pt-2 mt-2">
+                  <span class="text-sm font-medium text-gray-700"
+                    >Total a pagar:</span
+                  >
+                  <span class="text-sm font-bold text-emerald-600">
+                    {{ selectedLoanForPayment?.loan_description ? 
+                       formatCurrency(selectedLoanForPayment?.loan_description?.[0]?.valor_cuota || '0') : 
+                       '0' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Información del préstamo -->
+            <div class="mt-4 bg-gray-50 p-4 rounded-md">
+              <h4 class="text-sm font-medium text-gray-700 mb-3">
+                Información del Préstamo
+              </h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <p class="text-sm text-gray-600">Deuda total:</p>
+                  <p class="text-sm font-medium">
+                    {{
+                      selectedLoanForPayment
+                        ? formatCurrency(selectedLoanForPayment.amount)
+                        : ""
+                    }}
+                  </p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Cuotas restantes:</p>
+                  <p class="text-sm font-medium">
+                    {{ selectedLoanForPayment?.loan_description?.[0]?.cuotas || 0 }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Selección de banco -->
+            <div class="mt-6">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Seleccione su banco
+              </label>
+              <select
+                [(ngModel)]="bankSelected"
+                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 rounded-md"
+              >
+                <option value="" disabled>
+                  Seleccione su entidad bancaria
+                </option>
+                <option value="bancolombia">Bancolombia</option>
+                <option value="davivienda">Davivienda</option>
+                <option value="bbva">BBVA Colombia</option>
+                <option value="popular">Banco Popular</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Mensaje de éxito -->
+          <div *ngIf="showPaymentSuccess" class="text-center py-6">
+            <div
+              class="bg-emerald-100 rounded-full p-3 mx-auto w-16 h-16 flex items-center justify-center mb-4"
+            >
+              <svg
+                class="h-8 w-8 text-emerald-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">
+              ¡Pago realizado con éxito!
+            </h3>
+            <p class="text-sm text-gray-500 mb-4">
+              Su pago ha sido procesado correctamente y se ha generado la
+              factura correspondiente.
+            </p>
+            <div class="bg-gray-50 p-4 rounded-md inline-block">
+              <p class="text-sm font-medium text-gray-600">
+                Número de transacción:
+              </p>
+              <p class="text-lg font-bold text-gray-900">
+                PSE-{{ Math.floor(Math.random() * 1000000) }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones del modal -->
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <button
+            *ngIf="!showPaymentSuccess"
+            type="button"
+            (click)="processPayment()"
+            [disabled]="!bankSelected || processingPayment"
+            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm"
+          >
+            {{ processingPayment ? "Procesando..." : "Ir al banco" }}
+          </button>
+          <button
+            type="button"
+            (click)="closePayModal()"
+            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+          >
+            {{ showPaymentSuccess ? "Cerrar" : "Cancelar" }}
           </button>
         </div>
       </div>

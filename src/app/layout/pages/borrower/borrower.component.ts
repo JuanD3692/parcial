@@ -18,6 +18,7 @@ import { BorrowerService } from './services/borrower.service';
   styleUrl: './borrower.component.css',
 })
 export class BorrowerComponent implements OnInit {
+  Math = Math; // Para usar Math.random en el template
   loans: Loan[] = [];
   filteredLoans: Loan[] = [];
   lenders: Lender[] = [];
@@ -29,6 +30,11 @@ export class BorrowerComponent implements OnInit {
   processing = false;
   searchTerm = '';
   statusFilter = 'all';
+  showPayModal = false;
+  selectedLoanForPayment: Loan | null = null;
+  processingPayment = false;
+  bankSelected = '';
+  showPaymentSuccess = false;
 
   // Mensajes
   successMessage = '';
@@ -150,6 +156,20 @@ export class BorrowerComponent implements OnInit {
     this.selectedLoan = null;
   }
 
+  openPayModal(loan: Loan): void {
+    this.selectedLoanForPayment = loan;
+    this.showPayModal = true;
+    this.bankSelected = '';
+    this.showPaymentSuccess = false;
+  }
+
+  closePayModal(): void {
+    this.showPayModal = false;
+    this.selectedLoanForPayment = null;
+    this.bankSelected = '';
+    this.showPaymentSuccess = false;
+  }
+
   // Métodos para CRUD
   createLoan(): void {
     if (this.createForm.invalid) {
@@ -228,6 +248,27 @@ export class BorrowerComponent implements OnInit {
           this.errorMessage =
             'Error al cancelar el préstamo. Intente nuevamente.';
           this.processing = false;
+        },
+      });
+  }
+
+  processPayment(): void {
+    if (!this.selectedLoanForPayment || !this.bankSelected) return;
+
+    this.processingPayment = true;
+
+    this.borrowerService
+      .pagarCuota(this.selectedLoanForPayment.id.toString())
+      .subscribe({
+        next: () => {
+          this.processingPayment = false;
+          this.showPaymentSuccess = true;
+          this.loadLoans();
+        },
+        error: (err) => {
+          console.error('Error al procesar el pago:', err);
+          this.errorMessage = 'Error al procesar el pago. Intente nuevamente.';
+          this.processingPayment = false;
         },
       });
   }
