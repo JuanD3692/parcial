@@ -270,7 +270,7 @@ export class UsersComponent {
 
   numberOnly(event: KeyboardEvent): boolean {
     const charCode = event.which ? event.which : event.keyCode;
-    if (charCode < 49 || charCode > 57) {
+    if (charCode < 48 || charCode > 57) {
       return false;
     }
     return true;

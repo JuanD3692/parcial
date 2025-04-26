@@ -593,6 +593,7 @@
                       <input
                         type="number"
                         id="edit-document"
+                        (keypress)="numberOnly($event)"
                         formControlName="document"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         [ngClass]="{
@@ -618,6 +619,7 @@
                         type="number"
                         id="edit-phone"
                         formControlName="phone"
+                        (keypress)="numberOnly($event)"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         [ngClass]="{
                           'border-red-300 focus:border-red-500 focus:ring-red-500':
