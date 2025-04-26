@@ -9,7 +9,7 @@ import { loginGuard } from './core/guards/login.guard';
 export const routes: Routes = [
   { path: 'home', component: HomeComponent },
   { path: 'login', component: LoginComponent, canActivate: [projectGuard] },
-  { path: 'register', component: RegisterComponent, canActivate: [loginGuard] },
+  { path: 'register', component: RegisterComponent },
   { path: 'layout', loadChildren: () => import('./layout/layout.routes').then(m => m.LayoutRoutingModule) },
   { path: '', redirectTo: '/home', pathMatch: 'full' },
 ];

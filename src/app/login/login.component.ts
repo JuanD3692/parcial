@@ -5,13 +5,15 @@ import { FormsModule } from "@angular/forms"
 import { LoginService } from './services/login.service';
 import { ILogin } from './interfaces/ILogin';
 import { IResponse } from './interfaces/IResponse';
+import { MessageFlashComponent } from '../shared/components/message-flash/message-flash.component';
+import { MessageFlashService } from '../shared/components/message-flash/message-flash.service';
 
 declare const google: any;
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, MessageFlashComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -24,6 +26,7 @@ export class LoginComponent {
   constructor(
     private loginService: LoginService,
     private router: Router,
+    private messageFlashService: MessageFlashService
   ) {}
 
   ngOnInit(): void {
@@ -39,11 +42,13 @@ export class LoginComponent {
 
     this.loginService.login(loginData).subscribe(
       (response: IResponse) => {
+        this.messageFlashService.success('Inicio de sesión exitoso', 1000);
         this.loginService.handleLoginResponse(response);
         this.router.navigate(['/layout']); 
       },
       (error) => {
         console.error('Error al iniciar sesión', error);
+        this.messageFlashService.danger('Usuario o contraseña incorrectos', 3000);
       }
     );
   }
@@ -69,6 +74,7 @@ export class LoginComponent {
         this.router.navigate(['/layout']);
       },
       (error) => {
+        this.messageFlashService.danger('El correo con el que desear ingresar no se encuentra en el sistema', 3000);
         console.error('Error al iniciar sesión con Google', error);
       }
     );

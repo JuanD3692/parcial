@@ -11,6 +11,8 @@ import { Router, RouterModule } from '@angular/router';
 import { LayoutService } from '../layout/servicies/layout.service';
 import { ILayout } from '../layout/interfaces/ILayout';
 import { BorrowerService } from '../pages/borrower/services/borrower.service';
+import { MessageFlashComponent } from '../../shared/components/message-flash/message-flash.component';
+import { MessageFlashService } from '../../shared/components/message-flash/message-flash.service';
 
 interface ChatMessage {
   text: string;
@@ -21,7 +23,7 @@ interface ChatMessage {
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, MessageFlashComponent],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css',
 })
@@ -42,7 +44,6 @@ export class LayoutComponent implements OnInit, AfterViewChecked {
     avatar: '/placeholder.svg?height=40&width=40',
   };
 
-  // Menú de navegación original
   navigationItems = [
     {
       title: 'Dashboard',
@@ -79,21 +80,20 @@ export class LayoutComponent implements OnInit, AfterViewChecked {
   constructor(
     private router: Router,
     private layoutService: LayoutService,
-    private borrowerService: BorrowerService
-  ) {} // Inyectar el servicio
+    private borrowerService: BorrowerService,
+    private messageFlashService: MessageFlashService
+  ) { }
 
   ngOnInit() {
     this.checkScreenSize();
     window.addEventListener('resize', this.checkScreenSize.bind(this));
 
-    // Filtrar los paths permitidos al inicializar el componente
     this.layoutService.getUserInfo().subscribe((data: ILayout) => {
       const allowedPaths: string[] = data.paths; // Obtener los paths permitidos
       this.navigationItems = this.navigationItems.filter((item) =>
         allowedPaths.includes(item.route)
       );
 
-      // Redirigir al primer path permitido
       const defaultRoute = this.navigationItems.find((item) =>
         allowedPaths.includes(item.route)
       )?.route;
@@ -122,7 +122,7 @@ export class LayoutComponent implements OnInit, AfterViewChecked {
         this.chatMessagesContainer.nativeElement.scrollTop =
           this.chatMessagesContainer.nativeElement.scrollHeight;
       }
-    } catch (err) {}
+    } catch (err) { }
   }
 
   checkScreenSize() {
@@ -221,14 +221,14 @@ export class LayoutComponent implements OnInit, AfterViewChecked {
           lastLoans.forEach((loan) => {
             const loanDescription = loan.loan_description[0];
             const message = `
-Préstamo:
-- Monto: $${loan.amount}
-- Tasa de interés: ${loan.interest_rate}%
-- Cuotas: ${loanDescription.cuotas}
-- Fecha inicio: ${new Date(loanDescription.date_initial).toLocaleDateString()}
-- Fecha final: ${new Date(loanDescription.date_final).toLocaleDateString()}
-- Estado: ${loan.status}
-            `;
+                            Préstamo:
+                            - Monto: $${loan.amount}
+                            - Tasa de interés: ${loan.interest_rate}%
+                            - Cuotas: ${loanDescription.cuotas}
+                            - Fecha inicio: ${new Date(loanDescription.date_initial).toLocaleDateString()}
+                            - Fecha final: ${new Date(loanDescription.date_final).toLocaleDateString()}
+                            - Estado: ${loan.status}
+                                        `;
 
             this.chatMessages.push({
               text: message,

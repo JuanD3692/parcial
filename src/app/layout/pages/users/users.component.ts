@@ -231,6 +231,7 @@ export class UsersComponent {
         this.filteredUsers = [...this.users];
         this.processing = false;
         this.showMessage('success', 'Usuario eliminado exitosamente');
+        this.loadUsers();
         this.closeDeleteModal();
       },
       error: (err) => {

@@ -9,11 +9,13 @@ import {
 } from '@angular/forms';
 import { Loan, Lender, CreateBorrowerRequest } from './interfaces/IBorrower';
 import { BorrowerService } from './services/borrower.service';
+import { MessageFlashComponent } from '../../../shared/components/message-flash/message-flash.component';
+import { MessageFlashService } from '../../../shared/components/message-flash/message-flash.service';
 
 @Component({
   selector: 'app-borrower',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, MessageFlashComponent],
   templateUrl: './borrower.component.html',
   styleUrl: './borrower.component.css',
 })
@@ -48,7 +50,8 @@ export class BorrowerComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private borrowerService: BorrowerService
+    private borrowerService: BorrowerService,
+    private messageFlashService: MessageFlashService
   ) {
     // Inicializar formulario
     this.createForm = this.fb.group({
@@ -82,9 +85,8 @@ export class BorrowerComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
+        this.messageFlashService.danger('Error al cargar los préstamos', 2000);
         console.error('Error al cargar préstamos:', err);
-        this.errorMessage =
-          'Error al cargar los préstamos. Intente nuevamente.';
         this.loading = false;
       },
     });
@@ -98,9 +100,8 @@ export class BorrowerComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
+        this.messageFlashService.danger('Error al cargar los prestamistas', 2000);
         console.error('Error al cargar prestamistas:', err);
-        this.errorMessage =
-          'Error al cargar los prestamistas. Intente nuevamente.';
         this.loading = false;
       },
     });
@@ -205,8 +206,8 @@ export class BorrowerComponent implements OnInit {
         }, 3000);
       },
       error: (err) => {
+        this.messageFlashService.danger(err, 2000);
         console.error('Error al crear el préstamo:', err);
-        this.errorMessage = 'Error al crear el préstamo. Intente nuevamente.';
         this.processing = false;
       },
     });
