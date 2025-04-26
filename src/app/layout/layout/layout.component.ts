@@ -8,8 +8,8 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { LayoutService } from '../layout/servicies/layout.service'; 
-import { ILayout } from '../layout/interfaces/ILayout'; 
+import { LayoutService } from '../layout/servicies/layout.service';
+import { ILayout } from '../layout/interfaces/ILayout';
 
 interface ChatMessage {
   text: string;
@@ -80,16 +80,18 @@ export class LayoutComponent implements OnInit, AfterViewChecked {
   ngOnInit() {
     this.checkScreenSize();
     window.addEventListener('resize', this.checkScreenSize.bind(this));
-  
+
     // Filtrar los paths permitidos al inicializar el componente
     this.layoutService.getUserInfo().subscribe((data: ILayout) => {
       const allowedPaths: string[] = data.paths; // Obtener los paths permitidos
       this.navigationItems = this.navigationItems.filter((item) =>
         allowedPaths.includes(item.route)
       );
-  
+
       // Redirigir al primer path permitido
-      const defaultRoute = this.navigationItems.find(item => allowedPaths.includes(item.route))?.route;
+      const defaultRoute = this.navigationItems.find((item) =>
+        allowedPaths.includes(item.route)
+      )?.route;
       if (defaultRoute) {
         this.router.navigate([defaultRoute]);
       }
@@ -180,7 +182,6 @@ export class LayoutComponent implements OnInit, AfterViewChecked {
       //   });
       // });
 
-      // Respuesta simulada
       this.chatMessages.push({
         text: this.getBotResponse(userQuestion),
         isUser: false,
@@ -193,24 +194,13 @@ export class LayoutComponent implements OnInit, AfterViewChecked {
     // Respuestas simuladas basadas en palabras clave
     question = question.toLowerCase();
 
-    if (question.includes('préstamo') || question.includes('prestamo')) {
+    if (question.includes('asesor') || question.includes('asesoria')) {
       return 'Para solicitar un préstamo, necesitas completar el formulario en la sección de Préstamos. ¿Necesitas ayuda con algo específico?';
-    } else if (
-      question.includes('tasa') ||
-      question.includes('interés') ||
-      question.includes('interes')
-    ) {
-      return 'Nuestra tasa de interés actual es del 10% anual para préstamos personales. Las tasas pueden variar según el tipo de préstamo y tu historial crediticio.';
-    } else if (question.includes('pago') || question.includes('cuota')) {
+    }
+    if (question.includes('ver mis prestamos') || question.includes('deudas')) {
       return 'Puedes realizar tus pagos a través de la sección de Pagos en la plataforma, o mediante transferencia bancaria. ¿Necesitas los detalles de la cuenta?';
-    } else if (
-      question.includes('hola') ||
-      question.includes('buenos días') ||
-      question.includes('buenas tardes')
-    ) {
-      return '¡Hola! ¿En qué puedo ayudarte hoy con tus consultas financieras?';
     } else {
-      return 'Gracias por tu mensaje. Un asesor revisará tu consulta y te responderá a la brevedad. Si es urgente, puedes llamarnos al 555-123-4567.';
+      return '';
     }
   }
 

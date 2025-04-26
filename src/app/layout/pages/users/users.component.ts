@@ -267,6 +267,14 @@ export class UsersComponent {
       });
   }
 
+  numberOnly(event: KeyboardEvent): boolean {
+    const charCode = event.which ? event.which : event.keyCode;
+    if (charCode < 49 || charCode > 57) {
+      return false;
+    }
+    return true;
+  }
+
   isFieldInvalid(form: FormGroup, field: string): boolean {
     const formControl = form.get(field);
     return (
