@@ -82,7 +82,7 @@ export class LayoutComponent implements OnInit, AfterViewChecked {
     private layoutService: LayoutService,
     private borrowerService: BorrowerService,
     private messageFlashService: MessageFlashService
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.checkScreenSize();
@@ -122,7 +122,7 @@ export class LayoutComponent implements OnInit, AfterViewChecked {
         this.chatMessagesContainer.nativeElement.scrollTop =
           this.chatMessagesContainer.nativeElement.scrollHeight;
       }
-    } catch (err) { }
+    } catch (err) {}
   }
 
   checkScreenSize() {
@@ -171,7 +171,7 @@ export class LayoutComponent implements OnInit, AfterViewChecked {
       this.isTyping = false;
 
       if (this.getBotResponse(userQuestion) === '') {
-        fetch('https://tu-api-chatbot.com/api/chat', {
+        fetch('http://localhost:5005/webhooks/rest/webhook', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -181,7 +181,7 @@ export class LayoutComponent implements OnInit, AfterViewChecked {
           .then((response) => response.json())
           .then((data) => {
             this.chatMessages.push({
-              text: data.response,
+              text: data[0].text,
               isUser: false,
               time: timeString,
             });
@@ -225,8 +225,12 @@ export class LayoutComponent implements OnInit, AfterViewChecked {
                             - Monto: $${loan.amount}
                             - Tasa de interés: ${loan.interest_rate}%
                             - Cuotas: ${loanDescription.cuotas}
-                            - Fecha inicio: ${new Date(loanDescription.date_initial).toLocaleDateString()}
-                            - Fecha final: ${new Date(loanDescription.date_final).toLocaleDateString()}
+                            - Fecha inicio: ${new Date(
+                              loanDescription.date_initial
+                            ).toLocaleDateString()}
+                            - Fecha final: ${new Date(
+                              loanDescription.date_final
+                            ).toLocaleDateString()}
                             - Estado: ${loan.status}
                                         `;
 
