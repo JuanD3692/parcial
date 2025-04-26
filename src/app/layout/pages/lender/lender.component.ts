@@ -10,15 +10,15 @@ import { LenderService } from './services/lender.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './lender.component.html',
-  styleUrl: './lender.component.css'
+  styleUrl: './lender.component.css',
 })
 export class LenderComponent implements OnInit {
-
   loans: Loan[] = [];
   filteredLoans: Loan[] = [];
   isLoading = true;
-  searchTerm = "";
-  statusFilter = "all";
+  hasPermission = false; // Nueva propiedad para almacenar el permiso global
+  searchTerm = '';
+  statusFilter = 'all';
   selectedLoan: Loan | null = null;
   showDetailsModal = false;
   showApproveModal = false;
@@ -27,55 +27,79 @@ export class LenderComponent implements OnInit {
   itemsPerPage = 10;
   totalPages = 1;
 
-  successMessage = "";
-  errorMessage = "";
+  successMessage = '';
+  errorMessage = '';
 
-  constructor(private lenderService: LenderService, private cdr: ChangeDetectorRef) { }
+  constructor(
+    private lenderService: LenderService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
+    this.isLoading = true; // Aseguramos que isLoading está true al inicio
     this.fetchLoans();
   }
 
   fetchLoans(): void {
     this.isLoading = true;
     this.lenderService.getLenders().subscribe({
-      next: (response) => {
-        this.loans = response || []; 
-        this.applyFilters();
+      next: (response: any) => {
+        console.log('Datos recibidos:', response);
+        // Guardar el permiso global
+        this.hasPermission = response.presmiss || false;
+
+        if (response && Array.isArray(response.loans)) {
+          this.loans = response.loans;
+          this.filteredLoans = [...this.loans];
+          this.applyFilters();
+        }
         this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error("Error al cargar préstamos:", err);
-        this.errorMessage = "Error al cargar los préstamos. Intente nuevamente.";
+        console.error('Error al cargar préstamos:', err);
+        this.errorMessage =
+          'Error al cargar los préstamos. Intente nuevamente.';
+        this.loans = [];
+        this.filteredLoans = [];
+        this.isLoading = false; // Aseguramos que se establece en false en caso de error
+        this.cdr.detectChanges();
+      },
+      complete: () => {
+        // Aseguramos que isLoading se establece en false cuando se completa la petición
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
     });
   }
 
   applyFilters(): void {
-    let filtered = this.loans;
-  
+    if (!this.loans || this.loans.length === 0) {
+      this.filteredLoans = [];
+      return;
+    }
+
+    console.log('Aplicando filtros a:', this.loans);
+    let filtered = [...this.loans];
+
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(
         (loan) =>
-          loan.borrower.name.toLowerCase().includes(term) ||
-          loan.borrower.email.toLowerCase().includes(term) ||
-          loan.amount.includes(term) ||
-          loan.id.toString().includes(term),
+          loan?.borrower?.name?.toLowerCase().includes(term) ||
+          loan?.borrower?.email?.toLowerCase().includes(term) ||
+          loan?.amount?.toString().includes(term) ||
+          loan?.id?.toString().includes(term)
       );
-      console.log('Préstamos después de aplicar búsqueda:', filtered);
     }
-  
-    if (this.statusFilter !== "all") {
+
+    if (this.statusFilter !== 'all') {
       filtered = filtered.filter((loan) => loan.status === this.statusFilter);
-      console.log('Préstamos después de aplicar filtro de estado:', filtered);
     }
-  
+
     this.filteredLoans = filtered;
-    console.log('Préstamos filtrados finales:', this.filteredLoans);
     this.calculateTotalPages();
+    console.log('Préstamos filtrados:', this.filteredLoans);
   }
 
   calculateTotalPages(): void {
@@ -110,25 +134,27 @@ export class LenderComponent implements OnInit {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case "approved":
-        return "bg-green-100 text-green-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
+      case 'aprobado':
+      case 'approved':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
       default:
-        return "bg-gray-100 text-gray-800";
+        return 'bg-gray-100 text-gray-800';
     }
   }
 
   getStatusText(status: string): string {
     switch (status) {
-      case "approved":
-        return "Aprobado";
-      case "pending":
-        return "Pendiente";
-      case "rejected":
-        return "Rechazado";
+      case 'aprobado':
+      case 'approved':
+        return 'Aprobado';
+      case 'pending':
+        return 'Pendiente';
+      case 'rejected':
+        return 'Rechazado';
       default:
         return status;
     }
@@ -136,17 +162,17 @@ export class LenderComponent implements OnInit {
 
   formatDate(dateString: string): string {
     const date = new Date(dateString);
-    return date.toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   }
 
   formatCurrency(amount: string): string {
-    return new Intl.NumberFormat("es-ES", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'USD',
     }).format(Number.parseFloat(amount));
   }
 
@@ -177,7 +203,7 @@ export class LenderComponent implements OnInit {
   approveLoan(): void {
     if (this.selectedLoan) {
       const loanId = this.selectedLoan.id;
-      const payload = { status: "approved" };
+      const payload = { status: 'approved' };
 
       this.lenderService.updateLender(loanId.toString(), payload).subscribe({
         next: (updatedLoan) => {
@@ -186,14 +212,15 @@ export class LenderComponent implements OnInit {
             this.loans[index] = updatedLoan;
             this.applyFilters();
           }
-          this.successMessage = "Préstamo aprobado exitosamente.";
+          this.successMessage = 'Préstamo aprobado exitosamente.';
           this.closeApproveModal();
           this.fetchLoans();
-          setTimeout(() => (this.successMessage = ""), 3000);
+          setTimeout(() => (this.successMessage = ''), 3000);
         },
         error: (err) => {
-          console.error("Error al aprobar el préstamo:", err);
-          this.errorMessage = "Error al aprobar el préstamo. Intente nuevamente.";
+          console.error('Error al aprobar el préstamo:', err);
+          this.errorMessage =
+            'Error al aprobar el préstamo. Intente nuevamente.';
         },
       });
     }
@@ -202,7 +229,7 @@ export class LenderComponent implements OnInit {
   rejectLoan(): void {
     if (this.selectedLoan) {
       const loanId = this.selectedLoan.id;
-      const payload = { status: "rejected" };
+      const payload = { status: 'rejected' };
 
       this.lenderService.updateLender(loanId.toString(), payload).subscribe({
         next: (updatedLoan) => {
@@ -211,14 +238,15 @@ export class LenderComponent implements OnInit {
             this.loans[index] = updatedLoan;
             this.applyFilters();
           }
-          this.successMessage = "Préstamo rechazado exitosamente.";
+          this.successMessage = 'Préstamo rechazado exitosamente.';
           this.closeApproveModal();
           this.fetchLoans();
-          setTimeout(() => (this.successMessage = ""), 3000);
+          setTimeout(() => (this.successMessage = ''), 3000);
         },
         error: (err) => {
-          console.error("Error al rechazar el préstamo:", err);
-          this.errorMessage = "Error al rechazar el préstamo. Intente nuevamente.";
+          console.error('Error al rechazar el préstamo:', err);
+          this.errorMessage =
+            'Error al rechazar el préstamo. Intente nuevamente.';
         },
       });
     }
