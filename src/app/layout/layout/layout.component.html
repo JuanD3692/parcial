@@ -434,13 +434,10 @@
             "
             class="rounded-lg p-3 max-w-[80%]"
           >
-            <p class="text-sm">{{ message.text }}</p>
-            <span
-              [ngClass]="message.isUser ? 'text-white/80' : 'text-gray-500'"
-              class="text-xs mt-1 block"
-            >
-              {{ message.time }}
-            </span>
+            <div class="message" [ngClass]="{ 'user-message': message.isUser }">
+              <div class="message-content" [innerHTML]="message.text"></div>
+              <span class="message-time">{{ message.time }}</span>
+            </div>
           </div>
           <div
             *ngIf="message.isUser"
