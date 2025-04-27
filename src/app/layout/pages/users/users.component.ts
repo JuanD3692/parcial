@@ -32,6 +32,8 @@ export class UsersComponent {
   selectedUser: User | null = null;
   createForm: FormGroup;
   editForm: FormGroup;
+  showPassword: boolean = false;
+  showEditPassword: boolean = false;
 
   constructor(private fb: FormBuilder, private usersService: UsersService) {
     this.createForm = this.initForm();
@@ -266,6 +268,14 @@ export class UsersComponent {
           );
         },
       });
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleEditPasswordVisibility() {
+    this.showEditPassword = !this.showEditPassword;
   }
 
   numberOnly(event: KeyboardEvent): boolean {

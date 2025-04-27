@@ -1,6 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { Router, RouterModule } from '@angular/router'; // Importar Router para redirección
 import { RegisterService } from './services/register.service'; // Importar el servicio de registro
 import { MessageFlashComponent } from '../shared/components/message-flash/message-flash.component';
@@ -9,42 +15,96 @@ import { MessageFlashService } from '../shared/components/message-flash/message-
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, MessageFlashComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    MessageFlashComponent,
+  ],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.css'
+  styleUrls: ['./register.component.css'],
 })
 export class RegisterComponent {
+  registerForm: FormGroup;
+  showPassword = false;
+  showConfirmPassword = false;
 
-  registerData = {
-    name: "",
-    document: "",
-    phone: "",
-    username: "",
-    password: "",
-    confirmPassword: "",
-  };
+  constructor(
+    private fb: FormBuilder,
+    private registerService: RegisterService,
+    private router: Router,
+    private messageFlashService: MessageFlashService
+  ) {
+    this.registerForm = this.fb.group(
+      {
+        name: ['', [Validators.required, Validators.minLength(3)]],
+        phone: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
+        document: [
+          '',
+          [Validators.required, Validators.pattern('^[0-9]{8,10}$')],
+        ],
+        username: ['', [Validators.required, Validators.email]],
+        password: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(8),
+            Validators.pattern(/^(?=.*[A-Z])(?=.*\d).*$/),
+          ],
+        ],
+        confirmPassword: ['', Validators.required],
+      },
+      {
+        validator: this.passwordMatchValidator,
+      }
+    );
+  }
 
-  errorMessage: string = ""; // Para mostrar mensajes de error
+  passwordMatchValidator(g: FormGroup) {
+    const password = g.get('password')?.value;
+    const confirmPassword = g.get('confirmPassword')?.value;
+    return password === confirmPassword ? null : { mismatch: true };
+  }
 
-  constructor(private registerService: RegisterService, private router: Router, private messageFlashService: MessageFlashService) {} 
+  getErrorMessage(field: string): string {
+    const control = this.registerForm.get(field);
+    if (control?.errors) {
+      if (control.errors['required']) return 'Este campo es requerido';
+      if (control.errors['email'])
+        return 'Debe ser un correo electrónico válido';
+      if (control.errors['minlength'])
+        return `Mínimo ${control.errors['minlength'].requiredLength} caracteres`;
+      if (control.errors['pattern']) {
+        if (field === 'password')
+          return 'La contraseña debe contener al menos una mayúscula y un número';
+        if (field === 'phone') return 'El teléfono debe tener 10 dígitos';
+        if (field === 'document')
+          return 'El documento debe tener entre 8 y 10 dígitos';
+      }
+    }
+    return '';
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility() {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
 
   onSubmit() {
-    console.log("Datos de registro:", this.registerData);
-    if (this.registerData.password !== this.registerData.confirmPassword) {
-      this.messageFlashService.danger('Las contraseñas no coinciden', 2000);
-      return;
+    if (this.registerForm.valid) {
+      // Tu lógica de registro aquí
+      console.log(this.registerForm.value);
+    } else {
+      Object.keys(this.registerForm.controls).forEach((key) => {
+        const control = this.registerForm.get(key);
+        if (control?.invalid) {
+          control.markAsTouched();
+        }
+      });
     }
-
-    this.registerService.register(this.registerData).subscribe({
-      next: () => {
-        this.messageFlashService.success('Registro existo por favor inicia seción', 2000);
-        console.log("Registro exitoso");
-        this.router.navigate(['/login']);
-      },
-      error: (err) => {
-        this.messageFlashService.danger(err, 2000);
-        console.error("Error en el registro:", err);
-      }
-    });
   }
 }

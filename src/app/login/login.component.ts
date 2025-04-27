@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router, RouterLink, RouterModule } from '@angular/router';
-import { FormsModule } from "@angular/forms"
+import { FormsModule } from '@angular/forms';
 import { LoginService } from './services/login.service';
 import { ILogin } from './interfaces/ILogin';
 import { IResponse } from './interfaces/IResponse';
@@ -15,13 +15,13 @@ declare const google: any;
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, MessageFlashComponent],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrl: './login.component.css',
 })
 export class LoginComponent {
-
   username = '';
   password = '';
   mobileMenuOpen = false;
+  showPassword: boolean = false;
 
   constructor(
     private loginService: LoginService,
@@ -37,25 +37,36 @@ export class LoginComponent {
     this.mobileMenuOpen = !this.mobileMenuOpen;
   }
 
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
+
   onSubmit() {
-    const loginData: ILogin = { username: this.username, password: this.password };
+    const loginData: ILogin = {
+      username: this.username,
+      password: this.password,
+    };
 
     this.loginService.login(loginData).subscribe(
       (response: IResponse) => {
         this.messageFlashService.success('Inicio de sesión exitoso', 1000);
         this.loginService.handleLoginResponse(response);
-        this.router.navigate(['/layout']); 
+        this.router.navigate(['/layout']);
       },
       (error) => {
         console.error('Error al iniciar sesión', error);
-        this.messageFlashService.danger('Usuario o contraseña incorrectos', 3000);
+        this.messageFlashService.danger(
+          'Usuario o contraseña incorrectos',
+          3000
+        );
       }
     );
   }
 
   initializeGoogleSignIn(): void {
     google.accounts.id.initialize({
-      client_id: '728490474666-b9jb7ft7l9nr7dcho2etp0mk0nfa6qig.apps.googleusercontent.com', 
+      client_id:
+        '728490474666-b9jb7ft7l9nr7dcho2etp0mk0nfa6qig.apps.googleusercontent.com',
       callback: (response: any) => this.handleGoogleLogin(response),
     });
 
@@ -74,10 +85,12 @@ export class LoginComponent {
         this.router.navigate(['/layout']);
       },
       (error) => {
-        this.messageFlashService.danger('El correo con el que desear ingresar no se encuentra en el sistema', 3000);
+        this.messageFlashService.danger(
+          'El correo con el que desear ingresar no se encuentra en el sistema',
+          3000
+        );
         console.error('Error al iniciar sesión con Google', error);
       }
     );
   }
-
 }
