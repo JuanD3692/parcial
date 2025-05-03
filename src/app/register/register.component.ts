@@ -96,8 +96,20 @@ export class RegisterComponent {
 
   onSubmit() {
     if (this.registerForm.valid) {
-      // Tu lógica de registro aquí
-      console.log(this.registerForm.value);
+      const userData = {
+        name: this.registerForm.value.name,
+        phone: this.registerForm.value.phone,
+        document: this.registerForm.value.document,
+        username: this.registerForm.value.username,
+        password: this.registerForm.value.password,
+      };
+
+      this.registerService.register(userData).subscribe({
+        next: (response) => {
+          this.messageFlashService.success('Registro exitoso', 1000);
+          this.router.navigate(['/login']);
+        },
+      });
     } else {
       Object.keys(this.registerForm.controls).forEach((key) => {
         const control = this.registerForm.get(key);
